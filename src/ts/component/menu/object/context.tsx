@@ -40,6 +40,8 @@ const MenuObjectContext = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 	const getSections = () => {
 		const length = objectIds.length;
 		const canWrite = U.Space.canMyParticipantWrite();
+		const singleObject = (length == 1) ? getObjectHandler(subId, getObject, objectIds[0]) : null;
+		const isSingleType = !!singleObject && U.Object.isTypeLayout(singleObject.layout);
 
 		let pageCopy = { id: 'copy', iconParam: { name: 'menu/action/duplicate' }, name: translate('commonDuplicate') };
 		let pageLink = { id: 'pageLink', iconParam: { name: 'menu/action/pageLink' }, name: translate('commonCopyLink') };
@@ -54,6 +56,7 @@ const MenuObjectContext = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 		let exportObject = { id: 'export', iconParam: { name: 'menu/action/export' }, name: translate('menuObjectExport') };
 		let newTab = { id: 'newTab', iconParam: { name: 'menu/action/newTab' }, name: translate('menuObjectOpenInNewTab') };
 		let newWindow = { id: 'newWindow', iconParam: { name: 'menu/action/newWindow' }, name: translate('menuObjectOpenInNewWindow') };
+		let seeAll = { id: 'seeAll', iconParam: { name: 'menu/action/collection' }, name: translate('menuObjectSeeAllObjects') };
 		let archive = null;
 		let archiveCnt = 0;
 		let pin = null;
@@ -76,6 +79,7 @@ const MenuObjectContext = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 		let allowedEditChat = false;
 		let allowedExport = data.allowedExport;
 		let allowedNewTab = data.allowedNewTab;
+		const allowedSeeAll = canWrite && isSingleType;
 
 		const personalWidgetsId = U.Object.getPersonalWidgetsId();
 
@@ -225,9 +229,10 @@ const MenuObjectContext = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 			newTab = null;
 			newWindow = null;
 		};
+		if (!allowedSeeAll)	 seeAll = null;
 
 		let sections = [
-			{ children: [ open, changeType, relation ] },
+			{ children: [ open, seeAll, changeType, relation ] },
 			{ children: [ fav, pin, notification, editChat, linkTo, addCollection ] },
 			{ children: [ pageLink, pageCopy, exportObject, unlink, archive ] },
 			{ children: [ newTab, newWindow ] },
@@ -414,6 +419,11 @@ const MenuObjectContext = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 
 			case 'open': {
 				U.Object.openConfig(null, first);
+				break;
+			};
+
+			case 'seeAll': {
+				U.Object.openAllByType(objectIds[0]);
 				break;
 			};
 

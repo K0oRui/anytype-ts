@@ -318,7 +318,9 @@ const SidebarPageSettingsIndex = forwardRef<{}, I.SidebarPageComponent>((props, 
 				<div className="side left">
 					<Icon name="common/back" className="back" withBackground={true} onClick={onBack} />
 				</div>
-				<div className="side center" />
+				<div className="side center">
+					<div className="title">{isSpace ? (spaceview.name || translate('commonSettings')) : translate('commonAppSettings')}</div>
+				</div>
 			</div>
 			
 			<div id="body" className="body">

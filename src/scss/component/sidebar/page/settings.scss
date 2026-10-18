@@ -4,6 +4,10 @@
         display: flex; flex-direction: row; align-items: center; justify-content: center; padding: 0px 12px; height: 52px;
         gap: 0px 8px; overflow: hidden;
     }
+    > .head .side.center { display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    > .head .side.center {
+        .title { @include text-paragraph; font-weight: 600; @include text-overflow-nw; }
+    }
 
     > .body { 
 		display: flex; flex-direction: column; justify-content: space-between; padding: 0px; position: relative; flex-grow: 1; overscroll-behavior: none; 
@@ -29,6 +33,8 @@
 				pointer-events: none; transition: background-color $transitionCommon; border-radius: inherit;
 			}
 			.item.hover::before, .item:hover::before, .item.active::before { background: var(--color-shape-highlight-medium); }
+			.item .action { flex-shrink: 0; opacity: 0; cursor: pointer; transition: opacity $transitionCommon; }
+			.item:hover .action, .item.active .action { opacity: 1; }
 
             .item {
                 .icon { width: 20px; height: 20px; }

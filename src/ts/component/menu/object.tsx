@@ -28,6 +28,8 @@ const MenuObject = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 	const isType = U.Object.isTypeLayout(object.layout);
 	const isVideoOrAudio = U.Object.isVideoOrAudioLayout(object.layout);
 	const canWrite = U.Space.canMyParticipantWrite();
+	const seeAllTypeId = isType ? object.id : object.type;
+	const seeAllType = S.Record.getTypeById(seeAllTypeId);
 	const canDelete = S.Block.checkFlags(rootId, rootId, [ I.RestrictionObject.Delete ]);
 	const route = analytics.route.menuObject;
 	const isPopup = keyboard.isPopup();
@@ -58,7 +60,6 @@ const MenuObject = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 		let pageLock = null;
 		let template = null;
 		let setDefaultTemplate = null;
-		let advancedOptions = [];
 		let print = { id: 'print', iconParam: { name: 'menu/action/print' }, name: translate('menuObjectPrint'), caption: keyboard.getCaption('print') };
 		const isPinnedToChannel = !!S.Block.getWidgetsForTargetIn(rootId, S.Block.widgets).length;
 		const personalWidgetsId = U.Object.getPersonalWidgetsId();
@@ -78,9 +79,10 @@ const MenuObject = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 		let downloadFile = { id: 'downloadFile', iconParam: { name: 'menu/action/download' }, name: translate('commonDownload') };
 		let openFile = { id: 'openFile', iconParam: { name: 'common/expand' }, name: translate('menuObjectDownloadOpen') };
 		let openObject = { id: 'openAsObject', iconParam: { name: 'common/expand' }, name: translate('commonOpenObject') };
-		let advanced = { id: 'advanced', iconParam: { name: 'common/more' }, name: translate('menuObjectAdvanced'), children:[], arrow: true };
+		let advanced: any = { id: 'advanced', iconParam: { name: 'common/more' }, name: translate('menuObjectAdvanced'), children:[], arrow: true };
 		let editType = { id: 'editType', name: translate('menuObjectTypeSettings'), iconParam: { name: 'common/options' } };
 		let editChat = { id: 'editChat', name: translate('commonEditChat'), iconParam: { name: 'common/edit' } };
+		let seeAll = { id: 'seeAll', iconParam: { name: 'menu/action/collection' }, name: translate('menuObjectSeeAllObjects') };
 		let notification: any = { id: 'notification', name: translate('commonNotifications'), iconParam: { name: 'menu/action/notification' }, arrow: true };
 		let copyMedia = { id: 'copyMedia', name: translate('commonCopyToClipboard'), iconParam: { name: 'menu/action/clipboard' } };
 		let sections = [];
@@ -150,6 +152,7 @@ const MenuObject = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 		const hasDiscussion = !isChat && !!object.discussionId;
 		const allowedNotification = isChat || (canWrite && hasDiscussion);
 		const allowedCopyMedia = U.Object.isImageLayout(object.layout);
+		const allowedSeeAll = canWrite && !object._empty_ && !!seeAllType && !isRelation && !isChat && !isParticipant && !isDate && !isInFile && !(isInSet && !isType);
 		if (!allowedPageLink) {
 			pageLink = null;
 			pageDeeplink = null;
@@ -175,6 +178,7 @@ const MenuObject = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 		if (!allowedEditType) 		 editType = null;
 		if (!allowedEditChat) 		 editChat = null;
 		if (!allowedCopyMedia)		 copyMedia = null;
+		if (!allowedSeeAll)		 	 seeAll = null;
 		if (!allowedNotification) {
 			notification = null;
 		} else
@@ -205,15 +209,6 @@ const MenuObject = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 			editType = null;
 		};
 
-		advancedOptions.push(pageDeeplink);
-		advancedOptions = advancedOptions.filter(it => it);
-
-		if (advancedOptions.length) {
-			advanced.children = advancedOptions;
-		} else {
-			advanced = null;
-		};
-
 		if (hasShortMenu) {
 			if (!U.Object.isInSetLayouts(object.layout)) {
 				pageCopy = null;
@@ -222,36 +217,44 @@ const MenuObject = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 			sections = sections.concat([
 				{ children: [ openObject ] },
 				{ children: [ pageLink, favorite, pinToChannel, linkTo, addCollection, pageCopy, archive, remove, template ] },
-				{ children: [ pageLock, history ] },
-				{ children: [ downloadFile, copyMedia, print, exportSet ] },
+				{ children: [ downloadFile, copyMedia, exportSet ] },
 			]);
+
+			advanced.children = [ pageDeeplink, pageLock, history, print ];
 		} else {
 			if (isTemplate) {
 				sections = sections.concat([
 					{ children: [ template ] },
 					{ children: [ setDefaultTemplate, pageCopy, archive ] },
-					{ children: [ pageLock, searchText, history ] },
 				]);
+
+				advanced.children = [ pageDeeplink, pageLock, searchText, history ];
 			} else
 			if (object.isArchived) {
 				sections = sections.concat([
 					{ children: [ openObject ] },
-					{ children: [ searchText, pageExport, remove, archive ] },
-					{ children: [ print ] },
+					{ children: [ pageExport, remove, archive ] },
 				]);
+
+				advanced.children = [ pageDeeplink, searchText, print ];
 			} else {
 				sections = sections.concat([
 					{ children: [ openObject ] },
 					{ children: [ pageLink, favorite, pinToChannel, linkTo, addCollection, template, pageCopy, archive ] },
-					{ children: [ pageLock, searchText, history ] },
-					{ children: [ pageReload, print, pageExport ] },
 				]);
+
+				advanced.children = [ pageDeeplink, pageLock, searchText, history, pageReload, print, pageExport ];
 			};
 
 			sections = sections.map((it: any, i: number) => ({ ...it, id: `page${i}` }));
 		};
 
-		sections.unshift({ children: [ editType, editChat, notification ] });
+		advanced.children = advanced.children.filter(it => it);
+		if (!advanced.children.length) {
+			advanced = null;
+		};
+
+		sections.unshift({ children: [ editType, editChat, notification, seeAll ] });
 		sections.push({ children: [ advanced ] });
 
 		sections = sections.filter((section: any) => {
@@ -358,15 +361,13 @@ const MenuObject = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 				menuParam.data = {
 					options: item.children,
 					onSelect: (e, option) => {
-						switch (option.id) {
-
-							case 'pageDeeplink': {
-								U.Object.copyLink(object, spaceview, 'deeplink', '');
-								close();
-								break;
-							};
-
+						if (option.id == 'pageDeeplink') {
+							U.Object.copyLink(object, spaceview, 'deeplink', '');
+							close();
+							return;
 						};
+
+						onClick(e, option);
 					},
 				};
 				break;
@@ -563,6 +564,11 @@ const MenuObject = forwardRef<I.MenuRef, I.Menu>((props, ref) => {
 			case 'editType': {
 				S.Popup.close('preview');
 				U.Object.editType(isType ? rootId : object.type, isPopup, true);
+				break;
+			};
+
+			case 'seeAll': {
+				U.Object.openAllByType(seeAllTypeId);
 				break;
 			};
 

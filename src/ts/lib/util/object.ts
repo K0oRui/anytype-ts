@@ -234,6 +234,39 @@ class UtilObject {
 
 		keyboard.isPopup() ? this.openPopup(object, param) : this.openRoute(object, param);
 	};
+
+	/**
+	 * Opens a set (query) listing all objects of the given type.
+	 * Reuses an existing query sourced to the type, or creates one when none is found.
+	 * @param {string} typeId - The type object id.
+	 */
+	openAllByType (typeId: string) {
+		const type = S.Record.getTypeById(typeId);
+
+		if (!type) {
+			return;
+		};
+
+		const filters = [
+			{ relationKey: 'resolvedLayout', condition: I.FilterCondition.Equal, value: I.ObjectLayout.Set },
+			{ relationKey: 'setOf', condition: I.FilterCondition.In, value: [ typeId ] },
+		];
+
+		U.Subscription.search({ filters, keys: [ 'id' ] }, (message: any) => {
+			const records = (message.records || []).filter(it => it && !it.isArchived);
+
+			if (records.length) {
+				this.openAuto({ id: records[0].id, layout: I.ObjectLayout.Set });
+				return;
+			};
+
+			C.ObjectCreateSet([ typeId ], { name: type.pluralName || type.name || '' }, '', S.Common.space, (message: any) => {
+				if (!message.error.code) {
+					this.openAuto(message.details);
+				};
+			});
+		});
+	};
 	
 	async openRoute (object: any, param?: Partial<I.RouteParam>) {
 		if (!object) {

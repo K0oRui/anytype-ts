@@ -759,7 +759,7 @@
 	"pageSettingsSpaceRemoteStorage": "Remote Storage",
 	"pageSettingsSpaceSynced": "Synced",
 	"pageSettingsSpaceNotSynced": "Not Synced",
-	"pageSettingsSpaceIntegrations": "Integrations",
+	"pageSettingsSpaceIntegrations": "Import & Export",
 	"pageSettingsSpaceManageContent": "Content Model",
 
 	"pageSettingsSpaceIndexEdit": "Edit",
@@ -1056,7 +1056,7 @@
 	"popupSettingsAccountAndKeyTitle": "Vault & Key",
 	"popupSettingsDataManagementTitle": "Data Management",
 
-	"popupSettingsPersonalTitle": "Preferences",
+	"popupSettingsPersonalTitle": "Appearance & Preferences",
 	"popupSettingsPersonalDefaultObjectType": "Default Object Type",
 	"popupSettingsPersonalDefaultObjectTypeDescription": "Set the default type for newly created objects",
 	"popupSettingsPersonalDefaultObjectTypeSelect": "Select",
@@ -2489,6 +2489,7 @@
 	"menuObjectSetDefault": "Set as default",
 	"menuObjectDownloadOpen": "Download and Open",
 	"menuObjectAdvanced": "Advanced",
+	"menuObjectSeeAllObjects": "See all objects of this type",
 	"menuObjectOpenInNewTab": "Open in New Tab",
 	"menuObjectOpenInNewWindow": "Open in New Window",
 	"menuObjectRelations": "Open Properties",

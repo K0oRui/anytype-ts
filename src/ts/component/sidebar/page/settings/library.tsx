@@ -429,6 +429,14 @@ const SidebarPageSettingsLibrary = forwardRef<{}, I.SidebarPageComponent>((props
 						<IconObject object={item} />
 					)}
 					<ObjectName object={item} />
+					{U.Object.isTypeLayout(item.layout) ? (
+						<Icon
+							name="menu/action/collection"
+							className="action"
+							tooltipParam={{ text: translate('menuObjectSeeAllObjects') }}
+							onClick={e => { e.stopPropagation(); U.Object.openAllByType(item.id); }}
+						/>
+					) : ''}
 				</div>
 			);
 		};
